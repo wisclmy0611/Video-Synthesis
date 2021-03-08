@@ -11,6 +11,20 @@
 2. Prepare an `input.mp4` as your input video.
 3. Run `./video2anime.sh`. The script will automatically convert your video to images, run all of them through the model, and convert the resulting images back to a video called `output.mp4`.
 
+## Training
+
+Run `python train.py` to train the model. You can also use the following flags to tweak the training:
+    - `--dataset`: which dataset to use (Default: `dataset`).
+    - `--batch_size`: the batch size (Default: `64`).
+    - `--device`: device to train (Default: `cuda:0`).
+    - `--train_epoch`: number of training epoch (Default: `100`).
+    - `--lrD`: discriminator learning rate (Default: `4e-5`).
+    - `--lrG`: generator learning rate (Default: `2e-5`).
+
+## Evaluation
+
+Run `python test.py` for inference.
+
 ## Reference
 
 - [ffmpeg](https://ffmpeg.org/)
