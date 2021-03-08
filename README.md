@@ -16,3 +16,4 @@
 - [ffmpeg](https://ffmpeg.org/)
 - [AnimeGANv2](https://github.com/TachibanaYoshino/AnimeGANv2)
 - [animegan2-pytorch](https://github.com/bryandlee/animegan2-pytorch)
+- [cartoonGAN-pytorch](https://github.com/znxlwm/pytorch-CartoonGAN)

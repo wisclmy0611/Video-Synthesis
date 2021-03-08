@@ -108,7 +108,7 @@ class Generator(nn.Module):
         out = self.out_layer(out)
         return out
 
-class discriminator(nn.Module):
+class Discriminator(nn.Module):
     # initializers
     def __init__(self, nf=64):
         super(discriminator, self).__init__()
