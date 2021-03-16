@@ -7,8 +7,8 @@ import os
 
 from model import Generator
 
-torch.backends.cudnn.enabled = False
-torch.backends.cudnn.benchmark = False
+# torch.backends.cudnn.enabled = False
+# torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
     
 def load_image(image_path, x32=False):

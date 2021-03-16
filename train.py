@@ -11,8 +11,8 @@ from dataset import ImageDataset
 import utils
 from torch.utils.tensorboard import SummaryWriter
 
-torch.backends.cudnn.enabled = False
-torch.backends.cudnn.benchmark = False
+# torch.backends.cudnn.enabled = False
+# torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 
 def train(args):
