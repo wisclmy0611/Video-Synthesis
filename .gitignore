@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+dataset/
+checkpoints/
+runs/
+vgg19-dcbb9e9d.pth
+samples/results

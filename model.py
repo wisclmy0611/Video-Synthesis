@@ -111,7 +111,7 @@ class Generator(nn.Module):
 class Discriminator(nn.Module):
     # initializers
     def __init__(self, nf=64):
-        super(discriminator, self).__init__()
+        super(Discriminator, self).__init__()
         self.nf = nf
         self.convs = nn.Sequential(
             nn.Conv2d(3, nf, 3, 1, 1),
