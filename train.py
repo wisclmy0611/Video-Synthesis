@@ -12,7 +12,7 @@ import utils
 from torch.utils.tensorboard import SummaryWriter
 
 # torch.backends.cudnn.enabled = False
-# torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 
 def train(args):
@@ -39,6 +39,9 @@ def train(args):
         writer = SummaryWriter(comment=f'Exp_{args.exp_name}')
 
     # netG.load_state_dict(torch.load('./pytorch_generator_Paprika.pt'))
+    # netD.load_state_dict(torch.load('./checkpoints/Discriminator/netD_100.pt'))
+
+    netG.load_state_dict(torch.load('./checkpoints/netG_pretrained_5.pt'))
 
     pretrain_iter = 0
     for epoch in range(args.pre_train_epoch):
@@ -46,7 +49,7 @@ def train(args):
         epoch_start_time = time.time()
         for x, _ in real_loader:
             if (pretrain_iter+1) % 100 == 0:
-                print('pretrain_iter', pretrain_iter+1)
+                print('pretrain_iter', pretrain_iter+1, torch.mean(torch.FloatTensor(recon_losses)))
 
             x = x.to(device)
             x = x.permute(0, 3, 1, 2)
@@ -70,12 +73,13 @@ def train(args):
         recon_losses = torch.mean(torch.FloatTensor(recon_losses))
         print('[%d/%d] - time: %.2fs, Recon loss: %.3f' % ((epoch + 1), args.pre_train_epoch, per_epoch_time, recon_losses))
 
-        # torch.save(netG.state_dict(), f'checkpoints/netG_pretrained_{epoch + 1}.pt')
+        torch.save(netG.state_dict(), f'checkpoints/netG_pretrained_{epoch + 1}.pt')
 
         if args.use_writer:
             writer.add_scalar('Loss/pretrain', recon_losses, epoch + 1)
 
     iters = 0
+    print('===============start training==================')
     for epoch in range(args.train_epoch):
         d_losses = []
         g_losses = []
@@ -95,7 +99,7 @@ def train(args):
                 break
 
             if (iters+1) % 100 == 0:
-                print('iter', iters+1)
+                print('iter', iters+1, 'd_loss', torch.mean(torch.FloatTensor(d_losses)), 'g_loss', torch.mean(torch.FloatTensor(g_losses)))
 
             anime_style_data = anime_style_data.to(device)
             anime_style_grayscale_data = anime_style_grayscale_data.to(device)
@@ -116,10 +120,9 @@ def train(args):
             content_loss, style_loss = utils.con_sty_loss(vgg19, real_data, generated, anime_style_grayscale_data)
             color_loss = utils.color_loss(real_data, generated)
             tv_loss = utils.total_variation_loss(generated)
-            lossG = 300 * adv_loss + 1.2 * content_loss + 2 * style_loss + 10 * color_loss + tv_loss
+            lossG = 10 * adv_loss + 1.2 * content_loss + 2 * style_loss + 10 * color_loss + tv_loss
             g_losses.append(lossG.item())
 
-            #print('lossG', lossG)
             lossG.backward()
             optimizerG.step()
 
@@ -131,10 +134,9 @@ def train(args):
             anime_gray_logits = netD(anime_style_grayscale_data)
             anime_smooth_logits = netD(anime_smooth_grayscale_data)
 
-            lossD = 300 * (1.7 * torch.mean((anime_logits - 1) ** 2) + 1.7 * torch.mean(generated_logits ** 2) + 1.7 * torch.mean(anime_gray_logits ** 2) + torch.mean(anime_smooth_logits ** 2))
+            lossD = 10 * (1.7 * torch.mean((anime_logits - 1) ** 2) + 1.7 * torch.mean(generated_logits ** 2) + 1.7 * torch.mean(anime_gray_logits ** 2) + torch.mean(anime_smooth_logits ** 2))
             d_losses.append(lossD.item())
 
-            #print('lossD', lossD)
             lossD.backward()
             optimizerD.step()
 
