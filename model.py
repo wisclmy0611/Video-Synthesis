@@ -141,6 +141,100 @@ class Discriminator(nn.Module):
 
         return output
 
+class VideoGenerator(nn.Module):
+    def __init__(self, ):
+        super().__init__()
+        
+        self.block_a = nn.Sequential(
+            ConvNormLReLU(6,  32, kernel_size=7, padding=3),
+            ConvNormLReLU(32, 64, stride=2, padding=(0,1,0,1)),
+            ConvNormLReLU(64, 64)
+        )
+        
+        self.block_b = nn.Sequential(
+            ConvNormLReLU(64,  128, stride=2, padding=(0,1,0,1)),            
+            ConvNormLReLU(128, 128)
+        )
+        
+        self.block_c = nn.Sequential(
+            ConvNormLReLU(128, 128),
+            InvertedResBlock(128, 256, 2),
+            InvertedResBlock(256, 256, 2),
+            InvertedResBlock(256, 256, 2),
+            InvertedResBlock(256, 256, 2),
+            ConvNormLReLU(256, 128),
+        )    
+        
+        self.block_d = nn.Sequential(
+            ConvNormLReLU(128, 128),
+            ConvNormLReLU(128, 128)
+        )
+
+        self.block_e = nn.Sequential(
+            ConvNormLReLU(128, 64),
+            ConvNormLReLU(64,  64),
+            ConvNormLReLU(64,  32, kernel_size=7, padding=3)
+        )
+
+        self.out_layer = nn.Sequential(
+            nn.Conv2d(32, 3, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Tanh()
+        )
+        
+    def forward(self, input, align_corners=True):
+        out = self.block_a(input)
+        half_size = out.size()[-2:]
+        out = self.block_b(out)
+        out = self.block_c(out)
+        
+        if align_corners:
+            out = F.interpolate(out, half_size, mode="bilinear", align_corners=True)
+        else:
+            out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
+        out = self.block_d(out)
+
+        if align_corners:
+            out = F.interpolate(out, input.size()[-2:], mode="bilinear", align_corners=True)
+        else:
+            out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
+        out = self.block_e(out)
+
+        out = self.out_layer(out)
+        return out
+
+class VideoDiscriminator(nn.Module):
+    # initializers
+    def __init__(self, nf=64):
+        super(VideoDiscriminator, self).__init__()
+        self.nf = nf
+        self.convs = nn.Sequential(
+            nn.Conv2d(6, nf, 3, 1, 1),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf, nf * 2, 3, 2, 1),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf * 2, nf * 4, 3, 1, 1),
+            nn.InstanceNorm2d(nf * 4),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf * 4, nf * 4, 3, 2, 1),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf * 4, nf * 8, 3, 1, 1),
+            nn.InstanceNorm2d(nf * 8),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf * 8, nf * 8, 3, 1, 1),
+            nn.InstanceNorm2d(nf * 8),
+            nn.LeakyReLU(0.2, True),
+            nn.Conv2d(nf * 8, 1, 3, 1, 1),
+            nn.Sigmoid(),
+        )
+
+        utils.initialize_weights(self)
+
+    # forward method
+    def forward(self, input):
+        output = self.convs(input)
+
+        return output
+
 class VGG19(nn.Module):
     def __init__(self, init_weights=None, feature_mode=False, batch_norm=False, num_classes=1000):
         super(VGG19, self).__init__()

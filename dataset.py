@@ -19,8 +19,10 @@ plt.ion()   # interactive mode
 def load_data(path, partition, real, data_mean):
     dataset = []
     for clip_window in glob.glob(os.path.join(path, 'clip_window_*')):
-        img_path = clip_window + '/frame_00.jpg'
-        dataset.append(process_data(img_path, real, data_mean))
+        img0_path = clip_window + '/frame_00.jpg'
+        img1_path = clip_window + '/frame_01.jpg'
+        dataset.append(process_data(img0_path, real, data_mean) +
+                       process_data(img1_path, real, data_mean))
     return dataset
 
 def process_data(img_path, real, data_mean):

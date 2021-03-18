@@ -82,3 +82,6 @@ def total_variation_loss(img):
      tv_h = torch.pow(img[:,:,1:,:]-img[:,:,:-1,:], 2).sum()
      tv_w = torch.pow(img[:,:,:,1:]-img[:,:,:,:-1], 2).sum()
      return (tv_h+tv_w)/(bs_img*c_img*h_img*w_img)
+
+def cat_images(img1, img2):
+    return torch.cat((img1, img2), dim=1)

@@ -19,7 +19,7 @@ def read_img(image_path):
     return B,G,R
 
 def get_mean(dataset_name):
-    file_list = glob(f'{dataset_name}/style/*/frame_00.jpg')
+    file_list = glob(f'{dataset_name}/style/*/frame_0[01].jpg')
     image_num = len(file_list)
     print('image_num:', image_num)
 
